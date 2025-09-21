@@ -71,14 +71,33 @@ help:
 	@echo "  clean           - Clean all build files"
 	@echo "  dirs            - Create directory structure"
 	@echo ""
+	@echo "Single file compilation:"
+	@echo "  compile-nasm-debug FILE=filename    - Compile specific NASM file (debug)"
+	@echo "  compile-nasm-release FILE=filename  - Compile specific NASM file (release)"
+	@echo "  compile-gcc-debug FILE=filename     - Compile specific GCC file (debug)"
+	@echo "  compile-gcc-release FILE=filename   - Compile specific GCC file (release)"
+	@echo ""
+	@echo "Convenient shortcuts:"
+	@echo "  make nasm FILE=filename [MODE=debug|release]  - Compile NASM file"
+	@echo "  make gcc FILE=filename [MODE=debug|release]   - Compile GCC file"
+	@echo "  make debug FILE=filename    - Auto-detect and compile in debug"
+	@echo "  make release FILE=filename  - Auto-detect and compile in release"
+	@echo "  make single FILE=path/file.asm [MODE=debug|release] - Full path"
+	@echo ""
 	@echo "File naming conventions:"
 	@echo "  src/nasm/*.asm files  - NASM assembly source files"
 	@echo "  src/gcc/*.s files     - GCC assembly source files"
 	@echo ""
 	@echo "Examples:"
-	@echo "  make nasm-debug"
-	@echo "  make gcc-release"
-	@echo "  make all-debug"
+	@echo "  make nasm-debug                    # Compile all NASM files"
+	@echo "  make gcc-release                   # Compile all GCC files"
+	@echo "  make all-debug                     # Compile everything"
+	@echo ""
+	@echo "Single file examples:"
+	@echo "  make compile-nasm-debug FILE=hello_nasm"
+	@echo "  make nasm FILE=hello_nasm MODE=release"
+	@echo "  make debug FILE=calculator_nasm"
+	@echo "  make single FILE=src/nasm/hello.asm"
 
 # Create directory structure
 .PHONY: dirs
@@ -157,22 +176,110 @@ clean-release:
 
 # Individual file compilation (useful for testing single files)
 .PHONY: compile-nasm-debug compile-nasm-release compile-gcc-debug compile-gcc-release
+.PHONY: nasm gcc debug release single
 
+# Single file compilation with FILE parameter
 compile-nasm-debug:
-	@if [ -z "$(FILE)" ]; then echo "Usage: make compile-nasm-debug FILE=filename.asm"; exit 1; fi
-	@make $(NASM_DEBUG_DIR)/$(basename $(FILE))
+	@if [ -z "$(FILE)" ]; then echo "Usage: make compile-nasm-debug FILE=filename"; echo "  (without .asm extension)"; exit 1; fi
+	@if [ ! -f "$(NASM_SRC_DIR)/$(FILE).asm" ]; then echo "Error: $(NASM_SRC_DIR)/$(FILE).asm not found"; exit 1; fi
+	@make dirs
+	@make $(NASM_DEBUG_DIR)/$(FILE)
+	@echo "Compiled: $(NASM_DEBUG_DIR)/$(FILE)"
 
 compile-nasm-release:
-	@if [ -z "$(FILE)" ]; then echo "Usage: make compile-nasm-release FILE=filename.asm"; exit 1; fi
-	@make $(NASM_RELEASE_DIR)/$(basename $(FILE))
+	@if [ -z "$(FILE)" ]; then echo "Usage: make compile-nasm-release FILE=filename"; echo "  (without .asm extension)"; exit 1; fi
+	@if [ ! -f "$(NASM_SRC_DIR)/$(FILE).asm" ]; then echo "Error: $(NASM_SRC_DIR)/$(FILE).asm not found"; exit 1; fi
+	@make dirs
+	@make $(NASM_RELEASE_DIR)/$(FILE)
+	@echo "Compiled: $(NASM_RELEASE_DIR)/$(FILE)"
 
 compile-gcc-debug:
-	@if [ -z "$(FILE)" ]; then echo "Usage: make compile-gcc-debug FILE=filename.s"; exit 1; fi
-	@make $(GCC_DEBUG_DIR)/$(basename $(FILE))
+	@if [ -z "$(FILE)" ]; then echo "Usage: make compile-gcc-debug FILE=filename"; echo "  (without .s extension)"; exit 1; fi
+	@if [ ! -f "$(GCC_SRC_DIR)/$(FILE).s" ]; then echo "Error: $(GCC_SRC_DIR)/$(FILE).s not found"; exit 1; fi
+	@make dirs
+	@make $(GCC_DEBUG_DIR)/$(FILE)
+	@echo "Compiled: $(GCC_DEBUG_DIR)/$(FILE)"
 
 compile-gcc-release:
-	@if [ -z "$(FILE)" ]; then echo "Usage: make compile-gcc-release FILE=filename.s"; exit 1; fi
-	@make $(GCC_RELEASE_DIR)/$(basename $(FILE))
+	@if [ -z "$(FILE)" ]; then echo "Usage: make compile-gcc-release FILE=filename"; echo "  (without .s extension)"; exit 1; fi
+	@if [ ! -f "$(GCC_SRC_DIR)/$(FILE).s" ]; then echo "Error: $(GCC_SRC_DIR)/$(FILE).s not found"; exit 1; fi
+	@make dirs
+	@make $(GCC_RELEASE_DIR)/$(FILE)
+	@echo "Compiled: $(GCC_RELEASE_DIR)/$(FILE)"
+
+# Convenient aliases for single file compilation
+# Usage: make nasm FILE=hello_nasm [MODE=debug|release]
+# Usage: make gcc FILE=hello_gcc [MODE=debug|release]
+nasm:
+	@if [ -z "$(FILE)" ]; then echo "Usage: make nasm FILE=filename [MODE=debug|release]"; echo "  Default MODE is debug"; exit 1; fi
+	@MODE=${MODE:-debug}; \
+	if [ "$MODE" = "debug" ]; then \
+		make compile-nasm-debug FILE=$(FILE); \
+	elif [ "$MODE" = "release" ]; then \
+		make compile-nasm-release FILE=$(FILE); \
+	else \
+		echo "Error: MODE must be 'debug' or 'release'"; exit 1; \
+	fi
+
+gcc:
+	@if [ -z "$(FILE)" ]; then echo "Usage: make gcc FILE=filename [MODE=debug|release]"; echo "  Default MODE is debug"; exit 1; fi
+	@MODE=${MODE:-debug}; \
+	if [ "$MODE" = "debug" ]; then \
+		make compile-gcc-debug FILE=$(FILE); \
+	elif [ "$MODE" = "release" ]; then \
+		make compile-gcc-release FILE=$(FILE); \
+	else \
+		echo "Error: MODE must be 'debug' or 'release'"; exit 1; \
+	fi
+
+# Single file compilation with automatic detection
+# Usage: make debug FILE=filename (auto-detects if it's .asm or .s)
+# Usage: make release FILE=filename (auto-detects if it's .asm or .s)
+debug:
+	@if [ -z "$(FILE)" ]; then echo "Usage: make debug FILE=filename"; echo "  (will auto-detect .asm or .s extension)"; exit 1; fi
+	@if [ -f "$(NASM_SRC_DIR)/$(FILE).asm" ]; then \
+		make compile-nasm-debug FILE=$(FILE); \
+	elif [ -f "$(GCC_SRC_DIR)/$(FILE).s" ]; then \
+		make compile-gcc-debug FILE=$(FILE); \
+	else \
+		echo "Error: Neither $(NASM_SRC_DIR)/$(FILE).asm nor $(GCC_SRC_DIR)/$(FILE).s found"; \
+		exit 1; \
+	fi
+
+release:
+	@if [ -z "$(FILE)" ]; then echo "Usage: make release FILE=filename"; echo "  (will auto-detect .asm or .s extension)"; exit 1; fi
+	@if [ -f "$(NASM_SRC_DIR)/$(FILE).asm" ]; then \
+		make compile-nasm-release FILE=$(FILE); \
+	elif [ -f "$(GCC_SRC_DIR)/$(FILE).s" ]; then \
+		make compile-gcc-release FILE=$(FILE); \
+	else \
+		echo "Error: Neither $(NASM_SRC_DIR)/$(FILE).asm nor $(GCC_SRC_DIR)/$(FILE).s found"; \
+		exit 1; \
+	fi
+
+# Single file compilation with full path specification
+# Usage: make single FILE=src/nasm/hello.asm [MODE=debug|release]
+single:
+	@if [ -z "$(FILE)" ]; then echo "Usage: make single FILE=path/to/file.asm|.s [MODE=debug|release]"; echo "  Default MODE is debug"; exit 1; fi
+	@MODE=${MODE:-debug}; \
+	BASENAME=$(basename $(FILE)); \
+	FILENAME=${BASENAME%.*}; \
+	EXT=${BASENAME##*.}; \
+	if [ "$EXT" = "asm" ]; then \
+		if [ "$MODE" = "debug" ]; then \
+			make compile-nasm-debug FILE=$FILENAME; \
+		else \
+			make compile-nasm-release FILE=$FILENAME; \
+		fi; \
+	elif [ "$EXT" = "s" ]; then \
+		if [ "$MODE" = "debug" ]; then \
+			make compile-gcc-debug FILE=$FILENAME; \
+		else \
+			make compile-gcc-release FILE=$FILENAME; \
+		fi; \
+	else \
+		echo "Error: File must have .asm or .s extension"; exit 1; \
+	fi
 
 # Show project status
 .PHONY: status debug-vars

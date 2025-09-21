@@ -3,12 +3,6 @@
 
 echo "Setting up Assembly Learning Project..."
 
-# Create directory structure
-mkdir -p src/nasm
-mkdir -p src/gcc
-mkdir -p debug/{nasm,gcc}
-mkdir -p release/{nasm,gcc}
-
 # Create a simple NASM hello world example
 cat >src/nasm/hello_nasm.asm <<'EOF'
 section .data
