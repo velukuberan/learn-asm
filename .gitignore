@@ -20,3 +20,18 @@ rad.json
 *.flf
 #Test results file
 TestResults.xml
+
+### Assembly Learning Project ###
+# Build directories
+debug/
+release/
+
+# Object files
+*.o
+
+# IDE files
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
