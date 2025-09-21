@@ -41,15 +41,15 @@ LD := ld
 
 # NASM flags
 NASM_DEBUG_FLAGS := -f elf64 -g -F dwarf
-NASM_RELEASE_FLAGS := -f elf64
+NASM_RELEASE_FLAGS := -f elf64 -O2
 
 # GCC flags for assembly
-GCC_DEBUG_FLAGS := -g -c
-GCC_RELEASE_FLAGS := -c
+GCC_DEBUG_FLAGS := -g -gdwarf-4 -c
+GCC_RELEASE_FLAGS := -O2 -c
 
 # Linker flags
 LD_DEBUG_FLAGS := -g
-LD_RELEASE_FLAGS := -s
+LD_RELEASE_FLAGS := -s --strip-all
 
 # Default target
 .PHONY: all

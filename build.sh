@@ -330,51 +330,19 @@ clean() {
     echo -e "${GREEN}${CHECK} Clean complete${NC}"
 }
 
-build_all() {
-    echo -e "${BLUE}${GEAR} Building all assembly files...${NC}"
-    echo
-
-    if make all-debug; then
-        echo -e "${GREEN}${CHECK} Debug build successful${NC}"
-    else
-        echo -e "${RED}${CROSS} Debug build failed${NC}"
-        return 1
-    fi
-
-    echo
-
-    if make all-release; then
-        echo -e "${GREEN}${CHECK} Release build successful${NC}"
-    else
-        echo -e "${RED}${CROSS} Release build failed${NC}"
-        return 1
-    fi
-
-    echo
-    echo -e "${GREEN}${CHECK} All builds completed successfully!${NC}"
-    echo -e "${BLUE}Use './build.sh display' to run executables${NC}"
-}
-
 show_help() {
     echo -e "${BLUE}${SPARKLES} Assembly Project Build Script${NC}"
     echo -e "${GREEN}Usage: ./build.sh [command]${NC}"
     echo
     echo -e "${YELLOW}Commands:${NC}"
-    echo -e "  ${CYAN}build${NC}     Build all assembly files (debug + release)"
     echo -e "  ${CYAN}display${NC}   Search and run compiled executables"
     echo -e "  ${CYAN}clean${NC}     Clean all build directories"
     echo -e "  ${CYAN}format${NC}    Format source code"
     echo -e "  ${CYAN}help${NC}      Show this help message"
     echo
     echo -e "${YELLOW}Examples:${NC}"
-    echo -e "  ${GREEN}./build.sh build${NC}     # Build everything"
     echo -e "  ${GREEN}./build.sh display${NC}   # Interactive executable runner"
     echo -e "  ${GREEN}./build.sh clean${NC}     # Clean build files"
-    echo
-    echo -e "${YELLOW}Makefile commands (alternative):${NC}"
-    echo -e "  ${GREEN}make nasm-debug${NC}      # Build NASM files (debug)"
-    echo -e "  ${GREEN}make gcc-release${NC}     # Build GCC files (release)"
-    echo -e "  ${GREEN}make all-debug${NC}       # Build all files (debug)"
     echo -e "  ${GREEN}make help${NC}            # Show Makefile help"
 }
 
@@ -390,10 +358,6 @@ case "$1" in
     ;;
 "clean")
     clean
-    exit 0
-    ;;
-"build")
-    build_all
     exit 0
     ;;
 "help" | "-h" | "--help")
